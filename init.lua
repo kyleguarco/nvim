@@ -9,16 +9,13 @@ require('packer').startup(function(use)
 		'hrsh7th/cmp-vsnip',
 		'hrsh7th/vim-vsnip'
 	}}
-	use 'simrat39/rust-tools.nvim'
-	use 'nvim-lua/plenary.nvim'
+	use { "nvim-telescope/telescope-file-browser.nvim", requires = {
+		{ 'nvim-telescope/telescope.nvim', requires = { 'nvim-lua/plenary.nvim' } }
+	}}
 	use { 'sindrets/diffview.nvim', requires = { 'nvim-lua/plenary.nvim' } }
 	use 'mfussenegger/nvim-dap'
 	use 'nvim-lualine/lualine.nvim'
 	use 'kyazdani42/nvim-web-devicons'
-	use { "nvim-telescope/telescope-file-browser.nvim", requires = {
-		{ 'nvim-telescope/telescope.nvim', requires = { 'nvim-lua/plenary.nvim' } }
-	}}
-	use 'mfussenegger/nvim-jdtls'
 end)
 
 do
@@ -50,13 +47,38 @@ do
 	vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
 	vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)
 	vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, opts)
-	
-	-- Configure VimTeX
-	-- vim.g.vimtex_compiler_method = "latexrun"
-	-- vim.g.vimtex_view_method = "zathura"
-	-- vim.g.vimtex_view_general_viewer = "evince"
-	-- vim.g.vimtex_view_general_options = [[--unique file:@pdf\#src:@line@tex]]
-	
+
+	-- Use LspAttach autocommand to only map the following keys
+	-- after the language server attaches to the current buffer
+	vim.api.nvim_create_autocmd('LspAttach', {
+		group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+		callback = function(ev)
+		-- Enable completion triggered by <c-x><c-o>
+		vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+
+		-- Buffer local mappings.
+		-- See `:help vim.lsp.*` for documentation on any of the below functions
+		local opts = { buffer = ev.buf }
+		vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+		vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+		vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+		vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+		vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
+		vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, opts)
+		vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, opts)
+		vim.keymap.set('n', '<space>wl', function()
+			print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+		end, opts)
+		vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, opts)
+		vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
+		vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
+		vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+		vim.keymap.set('n', '<space>f', function()
+			vim.lsp.buf.format { async = true }
+		end, opts)
+	  end,
+	})
+
 	-- Various highlighting changes
 	vim.cmd[[
 		" Forever make floating dialog backgrounds black. Now I can read my damn text!
@@ -92,59 +114,6 @@ local lspconfig = require('lspconfig')
 local capabilities = require('cmp_nvim_lsp').default_capabilities(
 	vim.lsp.protocol.make_client_capabilities()
 )
-
--- Use an on_attach function to only map the following keys
--- after the language server attaches to the current buffer
-local on_attach = function(client, bufnr)
-	-- Enable completion triggered by <c-x><c-o>
-	vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-
-	-- Mappings.
-	-- See `:help vim.lsp.*` for documentation on any of the below functions
-	local bufopts = { noremap=true, silent=true, buffer=bufnr }
-	vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
-	vim.keymap.set('n', 'gd', vim.lsp.buf.definition, bufopts)
-	vim.keymap.set('n', 'K', vim.lsp.buf.hover, bufopts)
-	vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, bufopts)
-	vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
-	vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, bufopts)
-	vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
-	vim.keymap.set('n', '<space>wl', function()
-		print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-	end, bufopts)
-	vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, bufopts)
-	vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, bufopts)
-	vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, bufopts)
-	vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
-	vim.keymap.set('n', '<space>f', vim.lsp.buf.formatting, bufopts)
-end
-
-lspconfig.texlab.setup {
-	settings = {
-		texlab = {
-			auxDirectory = ".",
-			bibtexFormatter = "texlab",
-			build = {
-				args = { "-pdf", "-interaction=nonstopmode", "-synctex=1", "%f" },
-				executable = "latexmk",
-				forwardSearchAfter = true,
-				onSave = true
-			},
-			chktex = {
-				onEdit = false,
-				onOpenAndSave = true
-			},
-			diagnosticsDelay = 300,
-			formatterLineLength = 80,
-			latexFormatter = "latexindent",
-			latexindent = {
-				modifyLineBreaks = false
-			}
-		}
-	}
-}
-
-require('rust-tools').setup {}
 
 require('lualine').setup {
 	options = {
