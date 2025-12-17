@@ -1,22 +1,4 @@
-require('packer').startup(function(use)
-	use 'wbthomason/packer.nvim' -- Package manager
-	use 'neovim/nvim-lspconfig' -- Collection of configurations for the built-in LSP client
-	use { 'hrsh7th/nvim-cmp', requires = {
-		'hrsh7th/cmp-nvim-lsp',
-		'hrsh7th/cmp-buffer',
-		'hrsh7th/cmp-path',
-		'hrsh7th/cmp-cmdline',
-		'hrsh7th/cmp-vsnip',
-		'hrsh7th/vim-vsnip'
-	}}
-	use { "nvim-telescope/telescope-file-browser.nvim", requires = {
-		{ 'nvim-telescope/telescope.nvim', requires = { 'nvim-lua/plenary.nvim' } }
-	}}
-	use { 'sindrets/diffview.nvim', requires = { 'nvim-lua/plenary.nvim' } }
-	use 'mfussenegger/nvim-dap'
-	use 'nvim-lualine/lualine.nvim'
-	use 'kyazdani42/nvim-web-devicons'
-end)
+require('config.lazy')
 
 do
 	-- Like "set" in vimscripts
@@ -26,10 +8,11 @@ do
 	set.showtabline = 2
 	
 	-- Tabs over spaces.
-	set.tabstop = 4
-	set.softtabstop = 1
+	set.tabstop = 2
+	set.softtabstop = 0 -- Replicate above value
 	set.shiftround = true
 	set.shiftwidth = 0
+	set.expandtab = false
 	
 	-- View spaces/tabs visually
 	set.list = true
@@ -185,30 +168,30 @@ vim.api.nvim_set_keymap(
 
 local kind_icons = {
 	Text = "",
-	Method = "",
-	Function = "",
+	Method = "M",
+	Function = "F",
 	Constructor = "",
-	Field = "",
-	Variable = "",
-	Class = "ﴯ",
+	Field = "*",
+	Variable = "V",
+	Class = "C",
 	Interface = "",
 	Module = "",
-	Property = "ﰠ",
+	Property = "P",
 	Unit = "",
-	Value = "",
+	Value = "L",
 	Enum = "",
-	Keyword = "",
+	Keyword = "K",
 	Snippet = "",
-	Color = "",
-	File = "",
+	Color = "x",
+	File = ">",
 	Reference = "",
-	Folder = "",
+	Folder = "/",
 	EnumMember = "",
-	Constant = "",
+	Constant = "&",
 	Struct = "",
 	Event = "",
-	Operator = "",
-	TypeParameter = ""
+	Operator = "+",
+	TypeParameter = "T"
 }
 
 -- CMP Global setup.
