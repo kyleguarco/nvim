@@ -14,7 +14,10 @@ return {
 	'mfussenegger/nvim-dap',
 	'nvim-lualine/lualine.nvim',
 	'kyazdani42/nvim-web-devicons',
-	'simrat39/rust-tools.nvim',
-		'neovim/nvim-lspconfig'
+	{
+		'mrcjkb/rustaceanvim',
+		version = '^6', -- Recommended
+		lazy = false -- This plugin is already lazy
+	}
 }
 
